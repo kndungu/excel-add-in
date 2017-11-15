@@ -394,6 +394,7 @@ class App extends Component {
 
     // Listen for changes to the selected range
     this.office.listenForSelectionChanges(currentSelectedRange => {
+      console.log('This is the selected range', currentSelectedRange);
       this.setState({ currentSelectedRange });
     });
 
@@ -411,6 +412,72 @@ class App extends Component {
   closeAddData = () => {
     this.office.stopListeningForSelectionChanges();
     this.setState({ showAddDataModal: false, addDataModalOptions: {} });
+  };
+
+  formatRange = range => {
+    var formatColumn = columnNumber => {
+      var dividend = columnNumber;
+      var columnName = '';
+      var modulo;
+
+      while (dividend > 0) {
+        modulo = dividend % 26;
+        columnName = String.fromCharCode(65 + modulo) + columnName;
+        dividend = Math.floor((dividend - modulo) / 26);
+      }
+
+      return columnName;
+    };
+
+    return (
+      'Sheet1!' +
+      formatColumn(range.start.column) +
+      (range.start.row + 1) +
+      ':' +
+      formatColumn(range.stop.column) +
+      (range.stop.row + 1)
+    );
+  };
+
+  getRange = sheet => {
+    var range = {
+      start: {
+        row: 10000,
+        column: 10000
+      },
+      stop: {
+        row: 0,
+        column: 0
+      }
+    };
+    for (var row = 0; row < sheet.length; row++) {
+      for (var column = 0; column < sheet[row].length; column++) {
+        if (sheet[row][column]) {
+          if (row < range.start.row) {
+            range.start.row = row;
+          } else if (row > range.stop.row) {
+            range.stop.row = row;
+          }
+
+          if (column < range.start.column) {
+            range.start.column = column;
+          } else if (column > range.stop.column) {
+            range.stop.column = column;
+          }
+        }
+      }
+    }
+    console.log('The string', this.formatRange(range));
+
+    return this.formatRange(range);
+  };
+
+  getCell = () => {
+    console.log('Anyone out there');
+    this.office.getCell().then(result => {
+      this.setState({ currentSelectedRange: this.getRange(result) });
+      // console.log('This is my result', result)
+    });
   };
 
   dismissCSVWarning = options => {
@@ -527,6 +594,7 @@ class App extends Component {
             sync={this.sync}
             excelApiSupported={excelApiSupported}
             range={currentSelectedRange}
+            getCell={this.getCell}
             close={this.closeAddData}
             options={addDataModalOptions}
             createBinding={this.createBinding}

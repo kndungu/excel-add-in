@@ -223,6 +223,32 @@ export default class OfficeConnector {
     });
   }
 
+  getCell() {
+    return new Promise((resolve, reject) => {
+      Excel.run(function(ctx) {
+        var sheetName = 'Sheet1';
+        var rangeAddress = 'A1:Z30';
+        var range = ctx.workbook.worksheets
+          .getItem(sheetName)
+          .getRange(rangeAddress);
+        // range.clear();
+        // var cll = range.getCell(0,0);
+        range.load('values');
+        return ctx
+          .sync()
+          .then(() => {
+            resolve(range.values);
+          })
+          .catch(error => {
+            console.log(
+              'This is the source of your troubles',
+              JSON.stringify(error.debugInfo)
+            );
+          });
+      });
+    });
+  }
+
   getData(binding) {
     return new Promise((resolve, reject) => {
       const { columnCount, rowCount } = binding;

@@ -145,6 +145,12 @@ class AddDataModal extends Component {
     this.props.close();
   };
 
+  selectSheet = event => {
+    event.preventDefault();
+    this.props.getCell();
+    console.log('Select Sheet Clicked');
+  };
+
   render() {
     const { name } = this.state;
     const { excelApiSupported, options, range } = this.props;
@@ -182,6 +188,7 @@ class AddDataModal extends Component {
                 </HelpBlock>
               </FormGroup>
             )}
+            <button onClick={this.selectSheet}>Click me</button>
             {!excelApiSupported && (
               <div>
                 <ControlLabel>Dataset range</ControlLabel>
