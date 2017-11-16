@@ -426,7 +426,38 @@ class App extends Component {
       return dismissal === key;
     });
   }
+
+  createNamedItem = () => {
+    this.office
+      .createNamedItem('c')
+      .then(
+        (res) => {
+          console.log(res);
+        }
+      );
+  }
   
+  createBindingFromName = () => {
+    this.office
+      .createBindingNamedItem('c')
+      .then(
+        (result) => {
+          //result.delete();
+          console.log(result);
+        }
+      );
+  }
+  
+  delete = () => {
+    this.office
+      .delete()
+      .then(
+        (result) => {
+          //result.delete();
+          console.log(result);
+        }
+      );
+  }
   render () {
     const {
       addDataModalOptions,
@@ -496,6 +527,9 @@ class App extends Component {
           refreshLinkedDataset={this.refreshLinkedDataset}
           updateBinding={this.updateBinding}
           doesFileExist={this.doesFileExist}
+          create={this.createNamedItem}
+          bind={this.createBindingFromName}
+          delete={this.delete}
         />}
         <CSVWarningModal show={this.state.showCSVWarning} successHandler={this.dismissCSVWarning} />
       </div>

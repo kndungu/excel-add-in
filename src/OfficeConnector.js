@@ -196,6 +196,58 @@ export default class OfficeConnector {
     });
   }
 
+  createNamedItem (name) {
+    return new Promise((resolve, reject) => {
+      if (!this.isExcelApiSupported()) {
+        return resolve();
+      }
+      Excel.run(function (ctx) {
+        var namedItemCollection = ctx.workbook.names;
+        namedItemCollection.add(name, 'Sheet1!A1:B4', 'Range as a name');
+        var namedItem = namedItemCollection.getItem(name)
+        namedItem.load('value');
+        return ctx.sync().then(resolve(namedItem));
+      });
+    });
+  }
+
+  createBindingNamedItem (name) {
+    return new Promise((resolve, reject) => {
+      Office
+        .context
+        .document
+        .bindings
+        .addFromNamedItemAsync(
+          'a',
+          Office.BindingType.Matrix,
+          { id: `dw::${name}` },
+          (result) => {
+            if (result.status === Office.AsyncResultStatus.Failed) {
+              console.log('Damn')
+              return reject(result.error.message);
+            }
+            resolve(result.value);
+          }
+        );
+      });
+  }
+  
+  delete () {
+    return new Promise((resolve, reject) => {
+      if (!this.isExcelApiSupported()) {
+        return resolve();
+      }
+      Excel.run(function (ctx) {
+        var bindings = ctx.workbook.bindings;
+        bindings.load('items');
+        return ctx.sync().then(function() {
+          resolve(bindings);
+        });
+      });
+    });
+  }
+
+
   getData (binding) {
     return new Promise((resolve, reject) => {
       const {columnCount, rowCount} = binding;

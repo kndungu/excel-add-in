@@ -129,6 +129,20 @@ class AddDataModal extends Component {
     this.props.close();
   }
 
+  bind = (e) => {
+    e.preventDefault();
+    this.props.bind()
+  }
+
+  create = (e) => {
+    e.preventDefault();
+    this.props.create()
+  }
+  delete = (e) => {
+    e.preventDefault();
+    this.props.delete()
+  }
+  
   render () {
     const { name } = this.state;
     const { excelApiSupported, options, range } = this.props;
@@ -167,6 +181,15 @@ class AddDataModal extends Component {
                 Select the area to bind in the worksheet.
               </HelpBlock>
             </div>}
+            <div>
+              <button onClick={this.create}>Create</button>
+            </div>
+            <div>
+              <button onClick={this.bind}>Bind</button>
+            </div>
+            <div>
+              <button onClick={this.delete}>Delete</button>
+            </div>
 
             <FormGroup validationState={validState}>
               <ControlLabel>Name</ControlLabel>
