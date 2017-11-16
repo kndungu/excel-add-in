@@ -171,6 +171,7 @@ class App extends Component {
   async createBinding(filename) {
     try {
       const binding = await this.office.createBinding(filename);
+      console.log('THis is the binding', binding);
       if (binding.columnCount > MAXIMUM_COLUMNS) {
         await this.office.removeBinding(binding);
         throw new Error(
@@ -198,6 +199,7 @@ class App extends Component {
 
       return binding;
     } catch (error) {
+      console.log('It Fails', error);
       this.setState({ error });
     }
   }
@@ -394,7 +396,6 @@ class App extends Component {
 
     // Listen for changes to the selected range
     this.office.listenForSelectionChanges(currentSelectedRange => {
-      console.log('This is the selected range', currentSelectedRange);
       this.setState({ currentSelectedRange });
     });
 
@@ -416,6 +417,10 @@ class App extends Component {
 
   formatRange = range => {
     var formatColumn = columnNumber => {
+      if (columnNumber == 0) {
+        return 'A';
+      }
+
       var dividend = columnNumber;
       var columnName = '';
       var modulo;
@@ -430,7 +435,6 @@ class App extends Component {
     };
 
     return (
-      'Sheet1!' +
       formatColumn(range.start.column) +
       (range.start.row + 1) +
       ':' +
@@ -467,16 +471,16 @@ class App extends Component {
         }
       }
     }
-    console.log('The string', this.formatRange(range));
+    this.office.createSelectionRange(this.formatRange(range)).then(result => {
+      console.log(result);
+    });
 
     return this.formatRange(range);
   };
 
-  getCell = () => {
-    console.log('Anyone out there');
-    this.office.getCell().then(result => {
+  selectSheet = () => {
+    this.office.selectSheet().then(result => {
       this.setState({ currentSelectedRange: this.getRange(result) });
-      // console.log('This is my result', result)
     });
   };
 
@@ -594,9 +598,10 @@ class App extends Component {
             sync={this.sync}
             excelApiSupported={excelApiSupported}
             range={currentSelectedRange}
-            getCell={this.getCell}
+            selectSheet={this.selectSheet}
             close={this.closeAddData}
             options={addDataModalOptions}
+            names={this.office.getNames}
             createBinding={this.createBinding}
             refreshLinkedDataset={this.refreshLinkedDataset}
             updateBinding={this.updateBinding}

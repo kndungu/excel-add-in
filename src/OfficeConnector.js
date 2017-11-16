@@ -83,6 +83,53 @@ export default class OfficeConnector {
     });
   }
 
+  createSelectionRange(rangeAddress) {
+    // return new Promise((resolve, reject) => {
+    //   if (!this.isExcelApiSupported()) {
+    //     return resolve();
+    //   }
+    //   Excel.run(ctx => {
+    //     var nameditems = ctx.workbook.names;
+    //     nameditems.add('selectionsa', 'Sheet1!A1:C3', 'HopeItWorks')
+    //     return ctx
+    //       .sync()
+    //   });
+    // });
+    return new Promise((resolve, reject) => {
+      if (!this.isExcelApiSupported()) {
+        return resolve();
+      }
+      console.log('This is the range', rangeAddress);
+      Excel.run(function(ctx) {
+        var range = ctx.workbook.worksheets
+          .getItem('Sheet1')
+          .getRange(rangeAddress);
+        var namedItemCollection = ctx.workbook.names;
+        namedItemCollection.add('namesc', range, 'Range as a name');
+        return ctx.sync().then(resolve(123));
+      });
+    });
+  }
+
+  getNames() {
+    return new Promise((resolve, reject) => {
+      Excel.run(function(ctx) {
+        var sheetName = 'Sheet1';
+        var rangeAddress = 'C1:F10';
+        var range = ctx.workbook.worksheets
+          .getItem(sheetName)
+          .getRange(rangeAddress);
+        range.clear();
+        return ctx.sync();
+      }).catch(function(error) {
+        console.log('Error: ' + error);
+        if (error) {
+          console.log('Debug info: ' + JSON.stringify(error.debugInfo));
+        }
+      });
+    });
+  }
+
   getBindings() {
     return new Promise((resolve, reject) => {
       Office.context.document.bindings.getAllAsync(result => {
@@ -107,12 +154,27 @@ export default class OfficeConnector {
   }
 
   createBinding(name, options) {
+    console.log('This is the binding name', name);
+    // return new Promise((resolve, reject) => {
+    //   Office.context.document.bindings.addFromSelectionAsync(
+    //     Office.BindingType.Matrix,
+    //     { id: `dw::${name}` },
+    //     result => {
+    //       if (result.status === Office.AsyncResultStatus.Failed) {
+    //         return reject(result.error.message);
+    //       }
+    //       resolve(result.value);
+    //     }
+    //   );
+    // });
     return new Promise((resolve, reject) => {
-      Office.context.document.bindings.addFromSelectionAsync(
+      Office.context.document.bindings.addFromNamedItemAsync(
+        'namesc',
         Office.BindingType.Matrix,
         { id: `dw::${name}` },
         result => {
           if (result.status === Office.AsyncResultStatus.Failed) {
+            console.log('Damn');
             return reject(result.error.message);
           }
           resolve(result.value);
@@ -223,7 +285,7 @@ export default class OfficeConnector {
     });
   }
 
-  getCell() {
+  selectSheet() {
     return new Promise((resolve, reject) => {
       Excel.run(function(ctx) {
         var sheetName = 'Sheet1';
