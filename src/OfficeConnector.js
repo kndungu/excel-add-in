@@ -99,33 +99,14 @@ export default class OfficeConnector {
       if (!this.isExcelApiSupported()) {
         return resolve();
       }
-      console.log('This is the range', rangeAddress);
+      console.log('This is the absolute range', rangeAddress);
       Excel.run(function(ctx) {
         var range = ctx.workbook.worksheets
           .getItem('Sheet1')
           .getRange(rangeAddress);
         var namedItemCollection = ctx.workbook.names;
-        namedItemCollection.add('namesc', range, 'Range as a name');
+        namedItemCollection.add('namesf', range, 'Range as a name');
         return ctx.sync().then(resolve(123));
-      });
-    });
-  }
-
-  getNames() {
-    return new Promise((resolve, reject) => {
-      Excel.run(function(ctx) {
-        var sheetName = 'Sheet1';
-        var rangeAddress = 'C1:F10';
-        var range = ctx.workbook.worksheets
-          .getItem(sheetName)
-          .getRange(rangeAddress);
-        range.clear();
-        return ctx.sync();
-      }).catch(function(error) {
-        console.log('Error: ' + error);
-        if (error) {
-          console.log('Debug info: ' + JSON.stringify(error.debugInfo));
-        }
       });
     });
   }
@@ -169,7 +150,7 @@ export default class OfficeConnector {
     // });
     return new Promise((resolve, reject) => {
       Office.context.document.bindings.addFromNamedItemAsync(
-        'namesc',
+        'namesf',
         Office.BindingType.Matrix,
         { id: `dw::${name}` },
         result => {
@@ -289,12 +270,10 @@ export default class OfficeConnector {
     return new Promise((resolve, reject) => {
       Excel.run(function(ctx) {
         var sheetName = 'Sheet1';
-        var rangeAddress = 'A1:Z30';
+        var rangeAddress = 'A1:ET150';
         var range = ctx.workbook.worksheets
           .getItem(sheetName)
           .getRange(rangeAddress);
-        // range.clear();
-        // var cll = range.getCell(0,0);
         range.load('values');
         return ctx
           .sync()

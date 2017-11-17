@@ -94,13 +94,14 @@ class AddDataModal extends Component {
         .then(refreshLinkedDataset)
         .then(close);
     } else {
-      createBinding('testy.csv').then(binding => {
-        console.log('Inside binding');
-        // Binding has been created, but the file does not exist yet, sync the file
-        sync(binding)
-          .then(refreshLinkedDataset)
-          .then(close);
-      });
+      createBinding(`${this.getFilename(this.state.name)}.csv`).then(
+        binding => {
+          // Binding has been created, but the file does not exist yet, sync the file
+          sync(binding)
+            .then(refreshLinkedDataset)
+            .then(close);
+        }
+      );
     }
   };
 
@@ -148,11 +149,6 @@ class AddDataModal extends Component {
     event.preventDefault();
     this.props.selectSheet();
   };
-  getNames = event => {
-    event.preventDefault();
-    this.props.names();
-    console.log('Select NameSheet Clicked');
-  };
 
   render() {
     const { name } = this.state;
@@ -192,7 +188,6 @@ class AddDataModal extends Component {
               </FormGroup>
             )}
             <button onClick={this.selectSheet}>Select Sheet</button>
-            <button onClick={this.getNames}>Names</button>
             {!excelApiSupported && (
               <div>
                 <ControlLabel>Dataset range</ControlLabel>

@@ -434,6 +434,8 @@ class App extends Component {
       return columnName;
     };
 
+    console.log('This is the 150th column', formatColumn(150));
+
     return (
       formatColumn(range.start.column) +
       (range.start.row + 1) +
@@ -444,43 +446,16 @@ class App extends Component {
   };
 
   getRange = sheet => {
-    var range = {
-      start: {
-        row: 10000,
-        column: 10000
-      },
-      stop: {
-        row: 0,
-        column: 0
-      }
-    };
-    for (var row = 0; row < sheet.length; row++) {
-      for (var column = 0; column < sheet[row].length; column++) {
-        if (sheet[row][column]) {
-          if (row < range.start.row) {
-            range.start.row = row;
-          } else if (row > range.stop.row) {
-            range.stop.row = row;
-          }
-
-          if (column < range.start.column) {
-            range.start.column = column;
-          } else if (column > range.stop.column) {
-            range.stop.column = column;
-          }
-        }
-      }
-    }
-    this.office.createSelectionRange(this.formatRange(range)).then(result => {
+    this.office.createSelectionRange('A1:ET150').then(result => {
       console.log(result);
     });
-
-    return this.formatRange(range);
   };
 
   selectSheet = () => {
     this.office.selectSheet().then(result => {
-      this.setState({ currentSelectedRange: this.getRange(result) });
+      console.log('This is the range', result);
+      this.getRange(result);
+      this.setState({ currentSelectedRange: 'Sheet1' });
     });
   };
 
@@ -601,7 +576,6 @@ class App extends Component {
             selectSheet={this.selectSheet}
             close={this.closeAddData}
             options={addDataModalOptions}
-            names={this.office.getNames}
             createBinding={this.createBinding}
             refreshLinkedDataset={this.refreshLinkedDataset}
             updateBinding={this.updateBinding}
