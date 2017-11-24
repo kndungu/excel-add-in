@@ -19,3 +19,49 @@
 .add-data-modal {
   top: 50px;
 }
+
+.selection {
+  display: flex;
+  border: 1px solid #a3afbf;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.selection p {
+  margin: 0;
+  padding-left: 6px;
+  display: flex;
+  align-items: centre;
+}
+
+.selection input[type=radio] {
+  height: 19px;
+  width: 19px;
+  margin: 0;
+}
+
+.selection input[type=radio]:checked {
+  background-color: red;
+  width: 19px;
+  margin: 0;
+}
+.selection .radio-button {
+  display: flex;
+  padding: 12px;
+  align-items: center;
+}
+
+.selection .selection-info {
+  display: flex;
+  padding: 12px;
+  color: #969696;
+  font-size: 12px;
+}
+
+.select-sheet {
+  background-color: aliceblue;
+}
+
+.full-screen-modal .center-block .selection-form {
+  padding: 0;
+}

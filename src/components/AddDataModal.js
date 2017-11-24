@@ -64,7 +64,8 @@ class AddDataModal extends Component {
   state = {
     isSubmitting: false,
     name: this.props.options.filename ? getFilenameWithoutExtension(this.props.options.filename) : '',
-    showWarningModal: false
+    showWarningModal: false,
+    selectSheet: false
   }
 
   isFormValid = () => {
@@ -76,19 +77,26 @@ class AddDataModal extends Component {
     return name.match(filenameRegex) && name.length < MAX_FILENAME_LENGTH;
   }
 
-  submitBinding = () => {
+  submitBinding = (sheet, range) => {
     this.closeModal();
     const { close, createBinding, options, refreshLinkedDataset, sync, updateBinding } = this.props;
+
+    const bindingOptions = {
+      name: `${this.state.name}.csv`,
+      sheet: sheet,
+      range: this.state.selectSheet ? 'A1:ET10000' : range
+    }
+
     if (options.binding) {
-      updateBinding(options.binding, options.filename)
+      updateBinding(options.binding, options.filename, bindingOptions)
         .then(sync)
         .then(refreshLinkedDataset)
         .then(close);
     } else {
-      createBinding(`${this.getFilename(this.state.name)}.csv`).then((binding) => {
+      createBinding(bindingOptions).then((binding) => {
         // Binding has been created, but the file does not exist yet, sync the file
         sync(binding).then(refreshLinkedDataset).then(close);
-      });
+      })
     }
   }
 
@@ -100,7 +108,9 @@ class AddDataModal extends Component {
       // Show warning modal
       this.setState({ showWarningModal: true });
     } else {
-      this.submitBinding();
+      const sheet = `Sheet${this.getSheetNumber(this.props.range)}`;
+     const range = this.props.range ? this.props.range.substring(this.props.range.indexOf("!") + 1) : ''; 
+      this.submitBinding(sheet, range);
     }
   }
 
@@ -129,6 +139,62 @@ class AddDataModal extends Component {
     this.props.close();
   }
 
+  rangetoRowsCols = (range = "") => {
+    const coltoNumber = (column) => {
+      const base = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+      let result = 0;
+      let i;
+      let j;
+
+
+      for (i = 0, j = column.length - 1; i < column.length; i += 1, j -= 1) {
+        result += Math.pow(base.length, j) * (base.indexOf(column[i]) + 1);
+      }
+
+      return result
+    }
+
+    // Remove sheet from the range
+    const cellRange = range.substring(range.indexOf("!") + 1);
+
+    // [firstCell, lastCell]
+    const cells = cellRange.split(":");
+    if (cells.length === 0) {
+      return "";
+    } else if (cells.length === 1) {
+      return "1 Row x 1 Col"
+    }
+
+    const firstColumn = cells[0].match(/^[A-z]+/);
+    const lastColumn = cells[1].match(/^[A-z]+/);
+
+    const firstRow = cells[0].match(/[0-9]+/);
+    const lastRow = cells[1].match(/[0-9]+/);
+
+    const numberOfRows = lastRow - firstRow + 1;
+    const numberOfColumns = coltoNumber(lastColumn) - coltoNumber(firstColumn) + 1;
+
+    return `${numberOfRows} Rows x ${numberOfColumns} Columns`;
+  }
+
+  getSheetNumber = (range = "") => {
+    // The sheet e.g. Sheet1
+    const sheet = range.substring(0, range.indexOf("!"));
+    const sheetNumber = sheet.match(/[0-9]+/);
+
+    return sheetNumber;
+  }
+
+  changeSelection = (event) => {
+    const { value } = event.target
+
+    if (value === 'selection') {
+      this.setState({ selectSheet: false})
+    } else if (value === 'sheet') {
+      this.setState({ selectSheet: true });
+    }
+  }
+
   render () {
     const { name } = this.state;
     const { excelApiSupported, options, range } = this.props;
@@ -149,25 +215,40 @@ class AddDataModal extends Component {
         </Row>
         <Row className='center-block'>
           <form onSubmit={this.submit}>
-            {excelApiSupported && <FormGroup>
-              <ControlLabel>Dataset range</ControlLabel>
-              <InputGroup>
-                <FormControl
-                  value={range}
-                  disabled
-                  type='text' />
-              </InputGroup>
+            {excelApiSupported &&
+            <form className="selection-form" onClick={this.changeSelection}>
+              <div className='selection'>
+                <div className='radio-button'>
+                  <input type="radio" name="selection" value="selection" defaultChecked />
+                  <p>Selection</p>
+                </div>
+                <div className='selection-info'>
+                  {`(${this.rangetoRowsCols(range)})`}
+                </div>
+              </div>
+              <div className='selection'>
+                <div className='radio-button'>
+                  <input type="radio" name="selection" value='sheet' />
+                  <p>Sheet</p>
+                </div>
+                <div className='selection-info'>
+                  {`(Sheet ${this.getSheetNumber(range)})`}
+                </div>
+              </div>
               <HelpBlock>
-                Select the area to bind in the worksheet, it will be reflected here.
+                {
+                  this.state.selectSheet ?
+                  "Select the sheet you'd like to add, it will be refelected here." :
+                  "Select the area to bind in the worksheet, it will be reflected here."
+                }
               </HelpBlock>
-            </FormGroup>}
+            </form>}
             {!excelApiSupported && <div>
               <ControlLabel>Dataset range</ControlLabel>
               <HelpBlock>
                 Select the area to bind in the worksheet.
               </HelpBlock>
             </div>}
-
             <FormGroup validationState={validState}>
               <ControlLabel>Name</ControlLabel>
               <InputGroup>
@@ -187,7 +268,7 @@ class AddDataModal extends Component {
               <Button
                 type='submit'
                 disabled={this.state.isSubmitting || validState !== 'success'}
-                bsStyle='primary'>Add selection</Button>
+                bsStyle='primary'>OK</Button>
             </div>
           </form>
         </Row>

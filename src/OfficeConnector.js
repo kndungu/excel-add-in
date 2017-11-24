@@ -95,14 +95,35 @@ export default class OfficeConnector {
     });
   }
 
-  createBinding (name, options) {
+  createSelectionRange(name, sheet, rangeAddress) {
     return new Promise((resolve, reject) => {
-      Office.context.document.bindings.addFromSelectionAsync(Office.BindingType.Matrix, { id: `dw::${name}` }, (result) => {
-        if (result.status === Office.AsyncResultStatus.Failed) {
-          return reject(result.error.message);
-        }
-        resolve(result.value);
+      if (!this.isExcelApiSupported()) {
+        return resolve();
+      }
+      Excel.run(function(ctx) {
+        const range = ctx.workbook.worksheets
+          .getItem(sheet)
+          .getRange(rangeAddress);
+        const namedItemCollection = ctx.workbook.names;
+        namedItemCollection.add(name, range, 'Range as a name');
+        return ctx.sync().then(resolve(namedItemCollection));
       });
+    });
+  }
+
+  createBinding(name, options) {
+    return new Promise((resolve, reject) => {
+      Office.context.document.bindings.addFromNamedItemAsync(
+        name,
+        Office.BindingType.Matrix,
+        { id: `dw::${name}` },
+        result => {
+          if (result.status === Office.AsyncResultStatus.Failed) {
+            return reject(result.error.message);
+          }
+          resolve(result.value);
+        }
+      );
     });
   }
 
