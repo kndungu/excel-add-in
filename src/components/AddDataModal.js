@@ -81,19 +81,19 @@ class AddDataModal extends Component {
     this.closeModal();
     const { close, createBinding, options, refreshLinkedDataset, sync, updateBinding } = this.props;
 
-    const bindingOptions = {
+    const selection = {
       name: `${this.state.name}.csv`,
       sheet: sheet,
       range: this.state.selectSheet ? 'A1:ET10000' : range
     }
 
     if (options.binding) {
-      updateBinding(options.binding, options.filename, bindingOptions)
+      updateBinding(options.binding, selection)
         .then(sync)
         .then(refreshLinkedDataset)
         .then(close);
     } else {
-      createBinding(bindingOptions).then((binding) => {
+      createBinding(selection).then((binding) => {
         // Binding has been created, but the file does not exist yet, sync the file
         sync(binding).then(refreshLinkedDataset).then(close);
       })
@@ -109,7 +109,7 @@ class AddDataModal extends Component {
       this.setState({ showWarningModal: true });
     } else {
       const sheet = `Sheet${this.getSheetNumber(this.props.range)}`;
-     const range = this.props.range ? this.props.range.substring(this.props.range.indexOf("!") + 1) : ''; 
+      const range = this.props.range ? this.props.range.substring(this.props.range.indexOf("!") + 1) : ''; 
       this.submitBinding(sheet, range);
     }
   }

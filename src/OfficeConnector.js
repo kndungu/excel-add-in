@@ -106,7 +106,7 @@ export default class OfficeConnector {
           .getRange(rangeAddress);
         const namedItemCollection = ctx.workbook.names;
         namedItemCollection.add(name, range, 'Range as a name');
-        return ctx.sync().then(resolve(namedItemCollection));
+        return ctx.sync().then(resolve());
       });
     });
   }
